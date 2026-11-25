@@ -5,7 +5,7 @@ const { Server } = require("socket.io");
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
-const port = 3000;
+const port = Number(process.env.PORT ?? 3000);
 
 app.get("/", (_request, response) => {
   response.send("Servidor en funcionament");
