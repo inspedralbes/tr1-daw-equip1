@@ -55,3 +55,65 @@ Encara no hi ha altres rutes d'API ni senyalització o transport de mitjans WebR
  * Aplicació Android
  * Altres elements importants.
  * ...
+
+
+README
+ · MD
+# Pixel Plaza
+ 
+Joc multijugador en temps real de llops i aldeans, fet amb Vue 3, Phaser, Socket.IO i WebRTC.
+ 
+## Integrants
+ 
+* Fode Konte
+* Nil Díaz
+* Jordi Guzmán
+* Kim Zairyl
+* Hugo Berea
+## Nom del projecte
+ 
+**Pixel Plaza** (projecte transversal TR1, Grau Superior 2 DAW, Institut Pedralbes)
+ 
+## Descripció
+ 
+Pixel Plaza és un joc d'estil «homes llop» en una sala de Phaser amb **8 jugadors**: 6 aldeans i 2 llops.
+ 
+* La partida alterna **dia i nit**. De nit, els llops maten un jugador. De dia, tots els jugadors voten per expulsar un sospitós.
+* La partida acaba quan **s'han expulsat els 2 llops**, o quan **queden 2 llops contra 2 aldeans**.
+* El mapa és un poble amb una **zona central** i **cases o habitacions sense sostre**. Hi ha **pals interactuables** que donen informació i pistes segons la fase de la partida.
+* Els jugadors es comuniquen en temps real amb Socket.IO i, per la proximitat, amb WebRTC.
+### Tecnologies
+ 
+* Vue 3 (interfície i estat)
+* Phaser (món 2D)
+* Socket.IO (servidor Node.js de comunicació en temps real)
+* WebRTC (àudio i vídeo entre jugadors)
+* Docker (entorn d'execució)
+El projecte reutilitza codi de dos repositoris dels professors, entre ells [poc-oficina-virtual](https://github.com/polprats/poc-oficina-virtual).
+ 
+## Gestor de tasques
+ 
+Taiga (Scrum, projecte `dawtr1_g1`): https://tree.taiga.io/project/a24kimgalgal-dawtr1_g1/timeline
+ 
+## Prototip gràfic
+ 
+_Encara no disponible._
+ 
+## URL de producció
+ 
+_Encara no disponible._
+ 
+## Estat
+ 
+En desenvolupament. Treballem amb Scrum en sprints de 3 setmanes, **del 23 de novembre al 10 de desembre de 2026**.
+ 
+* **Sprint 1 (en curs):** user stories US-01 a US-04 planificades a Taiga:
+  * US-01: Docker
+  * US-02: entrada amb nom i avatar
+  * US-03: Phaser i moviment
+  * US-04: sincronització entre jugadors
+  * US-05: Lobby mínim amb jugadors connectats
+  * US-06: Protocol, GitFlow i documentació inicial
+
+* Pendent de decidir: el _stretch goal_ del projecte.
+ 
