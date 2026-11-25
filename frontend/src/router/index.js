@@ -9,6 +9,7 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'login', component: LoginView },
     { path: '/plaza', name: 'plaza', component: PlazaView },
+    { path: '/partida', name: 'partida', component: PlazaView },
     { path: '/salas', name: 'salas', component: SalasView },
     { path: '/crear', name: 'crear', component: CrearSalaView }
   ]

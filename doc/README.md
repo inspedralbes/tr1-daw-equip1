@@ -7,7 +7,7 @@ Llistat d'alguns dels punts que han de quedar explicats en aquesta carpeta. Pode
 
 El projecte és un prototip d'espai virtual amb client web i servidor en temps real. Actualment, el frontend és una plantilla Vue 3 amb Vite i el backend és un servidor Node.js amb Express i Socket.IO. La lògica del mapa, els avatars, el xat i les videotrucades encara no està implementada.
 
-Durant el desenvolupament, Vite serveix l'aplicació Vue al port `5173` i el backend Node.js queda accessible directament al port `3000`. El frontend encara no consumeix l'API ni Socket.IO, així que no hi ha cap proxy configurat entre els dos serveis.
+Durant el desenvolupament, Vite serveix l'aplicació Vue al port `5173` i el backend Node.js queda accessible directament al port `3000`. El frontend es connecta directament a Socket.IO del backend (port `3000`) des de la vista del joc (`/plaza` i `/partida`); no hi ha cap proxy configurat entre els dos serveis.
 
 ## Entorn de desenvolupament amb Docker
 
@@ -38,6 +38,21 @@ docker compose -f compose.dev.yaml up --build
 - `GET /`: retorna el text `Servidor en funcionament` amb estat HTTP 200.
 - Socket.IO: en connectar-se un client, el servidor emet `welcome` amb el text `Connexió establerta amb el servidor`.
 - En desconnectar-se un client, el servidor registra l'esdeveniment al log.
+
+### Sala del poble (joc)
+
+La lògica és a `backend/pueblo.js` i s'activa des de `server.js` amb `registrarPueblo(io)`. Socket.IO té `cors` obert perquè el frontend (port `5173`) s'hi connecta des d'un altre origen.
+
+| Esdeveniment | Direcció | Dades | Per a què |
+|---|---|---|---|
+| `bienvenida` | servidor → client nou | `{ miId, miCasa, jugadores }` | Casa assignada (0-7) i jugadors que ja hi són. |
+| `jugadorNuevo` | servidor → la resta | `{ id, casa, x, y, dir, andando, forma, durmiendo }` | Ha entrat algú. |
+| `mover` | client → servidor | `{ x, y, dir, andando, forma, durmiendo }` | Posició, direcció, si camina, si és llop i si dorm. |
+| `jugadorMovido` | servidor → la resta | mateix objecte que `jugadorNuevo` | Algú s'ha mogut o ha canviat. |
+| `jugadorSale` | servidor → tots | `id` | Algú ha sortit; la seva casa queda lliure. |
+| `salaLlena` | servidor → client nou | — | Ja hi ha 8 jugadors. |
+
+Més detalls del joc a [`juego-pueblo.md`](./juego-pueblo.md) i de l'edició del mapa a [`GUIA_TILED.md`](./GUIA_TILED.md).
 
 Encara no hi ha altres rutes d'API ni senyalització o transport de mitjans WebRTC implementats.
 
