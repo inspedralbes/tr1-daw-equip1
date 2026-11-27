@@ -424,8 +424,11 @@ export default class PuebloScene extends Phaser.Scene {
       nom = 'Anónimo';
     }
 
-    // Conectarse al servidor mandando el nombre
-    this.socket = io(SERVIDOR, { query: { nom: nom } });
+    // Conectarse al servidor
+    this.socket = io(SERVIDOR);
+
+    // Decirle al servidor que entramos en el pueblo, con nuestro nombre
+    this.socket.emit('player:join', { nom: nom });
 
     this.socket.on('bienvenida', ({ miId, miCasa, jugadores }) => {
       this.miId = miId;
@@ -491,7 +494,7 @@ export default class PuebloScene extends Phaser.Scene {
     if (!forzar && ahora - this.ultimoEnvio < 1000 / ENVIOS_POR_SEGUNDO) return;
     this.ultimoEnvio = ahora;
     const j = this.jugador;
-    this.socket.emit('mover', {
+    this.socket.emit('player:move', {
       x: Math.round(j.x),
       y: Math.round(j.y),
       dir: j.direccion,

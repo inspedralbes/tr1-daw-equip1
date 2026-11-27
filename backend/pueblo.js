@@ -1,47 +1,70 @@
-// pueblo.js — La sala del pueblo: da una casa a cada jugador y reenvía las posiciones.
+// pueblo.js — Eventos de Socket.IO de los jugadores del pueblo.
+//   player:join → un jugador entra en el pueblo
+//   player:move → un jugador se mueve
+//   disconnect  → un jugador se va (lo lanza Socket.IO solo)
 const estado = require('./jugadores');
 
 function registrarPueblo(io) {
   io.on('connection', (socket) => {
-    // 1. Leer el nombre que manda el juego. Si no manda ninguno, "Anónimo".
-    let nom = socket.handshake.query.nom;
-    if (nom === undefined || nom === '') {
-      nom = 'Anónimo';
-    }
+    // Al principio este socket todavía no es un jugador: tiene que mandar "player:join"
+    let jugador = null;
 
-    // 2. Apuntarlo en la lista
-    const jugador = estado.agregarJugador(socket.id, nom);
+    // ---------- player:join ----------
+    socket.on('player:join', (datos) => {
+      // Si ya ha entrado antes, no hacemos nada
+      if (jugador !== null) {
+        return;
+      }
 
-    // Si no cabe, avisarle y desconectarlo
-    if (jugador === null) {
-      socket.emit('salaLlena');
-      socket.disconnect();
-      return;
-    }
+      // El nombre viene en los datos. Si no viene, "Anónimo".
+      let nom = 'Anónimo';
+      if (datos && datos.nom) {
+        nom = datos.nom;
+      }
 
-    console.log('Entra ' + nom + ' en la casa ' + jugador.casa);
+      // Apuntarlo en la lista (con una casa libre)
+      jugador = estado.agregarJugador(socket.id, nom);
 
-    // 3. Al que entra: su casa y la lista de todos
-    socket.emit('bienvenida', {
-      miId: socket.id,
-      miCasa: jugador.casa,
-      jugadores: estado.listarJugadores(),
+      // Si no cabe, avisarle
+      if (jugador === null) {
+        socket.emit('salaLlena');
+        return;
+      }
+
+      console.log('player:join → ' + nom + ' en la casa ' + jugador.casa);
+
+      // Al que entra: su casa y la lista de todos
+      socket.emit('bienvenida', {
+        miId: socket.id,
+        miCasa: jugador.casa,
+        jugadores: estado.listarJugadores(),
+      });
+
+      // A los demás: que ha llegado alguien
+      socket.broadcast.emit('jugadorNuevo', jugador);
     });
 
-    // 4. A los demás: que ha llegado alguien
-    socket.broadcast.emit('jugadorNuevo', jugador);
+    // ---------- player:move ----------
+    socket.on('player:move', (datos) => {
+      // Si todavía no ha hecho player:join, no se puede mover
+      if (jugador === null) {
+        return;
+      }
 
-    // 5. Cuando se mueve
-    socket.on('mover', (datos) => {
       const jugadorActualizado = estado.actualizarJugador(socket.id, datos);
       socket.broadcast.emit('jugadorMovido', jugadorActualizado);
     });
 
-    // 6. Cuando se va
+    // ---------- disconnect ----------
     socket.on('disconnect', () => {
+      // Si nunca llegó a entrar en el pueblo, no hay nada que quitar
+      if (jugador === null) {
+        return;
+      }
+
       estado.quitarJugador(socket.id);
       io.emit('jugadorSale', socket.id);
-      console.log('Sale ' + nom);
+      console.log('disconnect → sale ' + jugador.nom);
     });
   });
 }
