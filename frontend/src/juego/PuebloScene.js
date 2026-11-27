@@ -17,6 +17,7 @@
 import * as Phaser from 'phaser';
 import { io } from 'socket.io-client';
 import { COMO_JUGAR, PISTAS } from './textos.js';
+import { useUserStore } from '@/stores/user';
 
 const RUTA = 'assets/pueblo/';
 const SERVIDOR = `http://${window.location.hostname}:3000`; // mismo ordenador que la web, puerto 3000
@@ -407,7 +408,15 @@ export default class PuebloScene extends Phaser.Scene {
   //  MULTIJUGADOR
   // =====================================================
   conectar() {
-    this.socket = io(SERVIDOR);
+    // Coger el nombre que se puso en el login
+    const usuario = useUserStore();
+    let nom = usuario.nom;
+    if (nom === '') {
+      nom = 'Anónimo';
+    }
+
+    // Conectarse al servidor mandando el nombre
+    this.socket = io(SERVIDOR, { query: { nom: nom } });
 
     this.socket.on('bienvenida', ({ miId, miCasa, jugadores }) => {
       this.miId = miId;

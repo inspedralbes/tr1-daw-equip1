@@ -2,10 +2,11 @@ const { createServer } = require("node:http");
 const express = require("express");
 const { Server } = require("socket.io");
 const { registrarPueblo } = require("./pueblo");
+const estado = require("./jugadores");
 
 const app = express();
 const httpServer = createServer(app);
-// cors: el frontend (Vite, puerto 5173) se conecta desde otro origen que el backend (puerto 3000)
+// cors: el frontend (puerto 5173) se conecta desde otro origen que el backend (puerto 3000)
 const io = new Server(httpServer, { cors: { origin: "*" } });
 const port = Number(process.env.PORT ?? 3000);
 
@@ -13,12 +14,20 @@ app.get("/", (_request, response) => {
   response.send("Servidor en funcionament");
 });
 
+// Ver los jugadores conectados: http://localhost:3000/api/jugadores
+app.get("/api/jugadores", (_request, response) => {
+  response.json({
+    total: estado.contarJugadores(),
+    jugadores: estado.listarJugadores(),
+  });
+});
+
 io.on("connection", (socket) => {
-  console.log(`Client connectat: ${socket.id}`);
+  console.log("Client connectat: " + socket.id);
   socket.emit("welcome", "Connexió establerta amb el servidor");
 
   socket.on("disconnect", () => {
-    console.log(`Client desconnectat: ${socket.id}`);
+    console.log("Client desconnectat: " + socket.id);
   });
 });
 
@@ -26,5 +35,5 @@ io.on("connection", (socket) => {
 registrarPueblo(io);
 
 httpServer.listen(port, () => {
-  console.log(`Servidor escoltant a http://localhost:${port}`);
+  console.log("Servidor escoltant a http://localhost:" + port);
 });
