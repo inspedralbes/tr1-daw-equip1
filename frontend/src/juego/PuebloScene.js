@@ -16,7 +16,7 @@
 //   El lobo (personajes/lobo/) tiene lo mismo menos Sleep.
 import * as Phaser from 'phaser';
 import { io } from 'socket.io-client';
-import { COMO_JUGAR, PISTAS } from './textos.js';
+import { comoJugar, PISTAS } from './textos.js';
 import { useUserStore } from '@/stores/user';
 
 const RUTA = 'assets/pueblo/';
@@ -341,8 +341,17 @@ export default class PuebloScene extends Phaser.Scene {
     const tipo = prop(it.punto, 'tipo');
     let dialogo = null;
 
-    if (tipo === 'como_jugar') {
-      dialogo = { titulo: 'Tablón de anuncios', icono: 'icono_tablon', paginas: COMO_JUGAR };
+       if (tipo === 'como_jugar') {
+      // Jugadores conectados: los demás que veo + yo
+      const numeroDeJugadores = this.otros.size + 1;
+
+      // 1 lobo por cada 4 jugadores (redondeando hacia abajo), y como mínimo 1
+      let numeroDeLobos = Math.floor(numeroDeJugadores / 4);
+      if (numeroDeLobos < 1) {
+        numeroDeLobos = 1;
+      }
+
+      dialogo = { titulo: 'Tablón de anuncios', icono: 'icono_tablon', paginas: comoJugar(numeroDeJugadores, numeroDeLobos) };
     } else if (tipo === 'pistas') {
       const pista = PISTAS[Math.min(this.diaActual, PISTAS.length) - 1];
       dialogo = {
