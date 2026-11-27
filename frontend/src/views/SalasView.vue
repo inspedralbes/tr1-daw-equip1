@@ -1,18 +1,18 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { usePartidasStore } from '@/stores/partidas'
 
 const codigo = ref('')
 const router = useRouter()
-const store = useUserStore()
+const store = usePartidasStore()
 
 function unirse() {
-    router.push('/partida')
+  router.push('/partida')
 }
 
 function crear() {
-    router.push('/crear')
+  router.push('/crear')
 }
 </script>
 
@@ -25,7 +25,9 @@ function crear() {
 
     <h2>Partidas públicas</h2>
     <ul>
-      <!-- aquí irán las partidas -->
+      <li v-for="p in store.partidas.filter((p) => p.tipo === 'publica')" :key="p.id">
+        <button @click="router.push('/partida')">{{ p.titulo }}</button>
+      </li>
     </ul>
 
     <div style="text-align: right">

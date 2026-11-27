@@ -1,34 +1,38 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { usePartidasStore } from '@/stores/partidas'
 
-const maxPersonas = ref(4)
+const router = useRouter()
+const store = usePartidasStore()
+
+const maxPersonas = ref(6)
 const tipo = ref('publica')
-const codigo = ref('')
+const codigo = Math.random().toString(36).substring(2, 7).toUpperCase()
+const titulo = ref('')
 
-function generarCodigo() {
-  return Math.random().toString(36).substring(2, 7).toUpperCase()
-}
+function crearPartida() {
+  if (!titulo.value.trim()) return alert('Pon un título a la partida')
 
-watch(tipo, (partida) => {
-  if (partida === 'privada') {
-    codigo.value = generarCodigo()
-  } else {
-    codigo.value = ''
-  }
-})
-
-function comenzar() {
-  console.log('Crear partida:', {
-    maxPersonas: maxPersonas.value,
+  store.agregar({
+    titulo: titulo.value.trim(),
+    max: maxPersonas.value,
     tipo: tipo.value,
-    codigo: codigo.value
+    codigo
   })
+
+  router.push('/salas')
 }
 </script>
 
 <template>
   <div>
     <h1>Crear partida</h1>
+
+     <div>
+      <label>Título de la partida</label>
+      <input v-model="titulo" type="text" placeholder="Partida de Juan" />
+    </div>
 
     <div>
       <label>Máximo de personas:</label>
@@ -47,6 +51,6 @@ function comenzar() {
       <p>Código de la partida: <strong>{{ codigo }}</strong></p>
     </div>
 
-    <button @click="comenzar">Comenzar</button>
+    <button @click="crearPartida">Crear partida</button>
   </div>
 </template>
