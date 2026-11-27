@@ -24,6 +24,7 @@ function comenzar() {
     codigo: codigo.value
   })
 }
+
 </script>
 
 <template>
@@ -46,7 +47,7 @@ function comenzar() {
     <div v-if="tipo === 'privada'">
       <p>Código de la partida: <strong>{{ codigo }}</strong></p>
     </div>
-
     <button @click="comenzar">Comenzar</button>
   </div>
+
 </template>
