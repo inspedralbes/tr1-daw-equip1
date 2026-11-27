@@ -1,72 +1,47 @@
-// pueblo.js — La sala del pueblo (El Pueblo Duerme).
-// Reparte una casa distinta a cada jugador que entra (máximo 8)
-// y reenvía a los demás su posición, hacia dónde mira, si anda, si es lobo y si duerme.
-//
-// Mensajes de Socket.IO:
-//   servidor → cliente: bienvenida, jugadorNuevo, jugadorMovido, jugadorSale, salaLlena
-//   cliente → servidor: mover
-
-const MAX_JUGADORES = 8;
+// pueblo.js — La sala del pueblo: da una casa a cada jugador y reenvía las posiciones.
+const estado = require('./jugadores');
 
 function registrarPueblo(io) {
-  // casas[0] ... casas[7]: el id del jugador que vive ahí, o null si está libre
-  const casas = new Array(MAX_JUGADORES).fill(null);
-
-  // id del socket → datos del jugador
-  const jugadores = new Map();
-
   io.on('connection', (socket) => {
-    // 1. Buscar la primera casa libre
-    const casa = casas.indexOf(null);
+    // 1. Leer el nombre que manda el juego. Si no manda ninguno, "Anónimo".
+    let nom = socket.handshake.query.nom;
+    if (nom === undefined || nom === '') {
+      nom = 'Anónimo';
+    }
 
-    if (casa === -1) {
+    // 2. Apuntarlo en la lista
+    const jugador = estado.agregarJugador(socket.id, nom);
+
+    // Si no cabe, avisarle y desconectarlo
+    if (jugador === null) {
       socket.emit('salaLlena');
       socket.disconnect();
       return;
     }
 
-    // 2. Asignarle esa casa
-    casas[casa] = socket.id;
-    const jugador = {
-      id: socket.id,
-      casa,              // número de casa: 0 a 7
-      x: null,           // null = todavía está en su spawn (el cliente sabe dónde es)
-      y: null,
-      dir: 'abajo',
-      andando: false,
-      forma: 'aldeano',  // 'aldeano' o 'lobo'
-      durmiendo: false,
-    };
-    jugadores.set(socket.id, jugador);
-    console.log(`Pueblo: entra ${socket.id} → casa ${casa}`);
+    console.log('Entra ' + nom + ' en la casa ' + jugador.casa);
 
-    // 3. Al nuevo: su casa y la lista de todos los que ya están
+    // 3. Al que entra: su casa y la lista de todos
     socket.emit('bienvenida', {
       miId: socket.id,
-      miCasa: casa,
-      jugadores: [...jugadores.values()],
+      miCasa: jugador.casa,
+      jugadores: estado.listarJugadores(),
     });
 
     // 4. A los demás: que ha llegado alguien
     socket.broadcast.emit('jugadorNuevo', jugador);
 
-    // 5. Cuando se mueve, se lo contamos a los demás
-    socket.on('mover', ({ x, y, dir, andando, forma, durmiendo }) => {
-      jugador.x = x;
-      jugador.y = y;
-      jugador.dir = dir;
-      jugador.andando = andando;
-      jugador.forma = forma;
-      jugador.durmiendo = durmiendo;
-      socket.broadcast.emit('jugadorMovido', jugador);
+    // 5. Cuando se mueve
+    socket.on('mover', (datos) => {
+      const jugadorActualizado = estado.actualizarJugador(socket.id, datos);
+      socket.broadcast.emit('jugadorMovido', jugadorActualizado);
     });
 
-    // 6. Al salir, su casa queda libre para el siguiente
+    // 6. Cuando se va
     socket.on('disconnect', () => {
-      casas[casa] = null;
-      jugadores.delete(socket.id);
+      estado.quitarJugador(socket.id);
       io.emit('jugadorSale', socket.id);
-      console.log(`Pueblo: sale ${socket.id} → casa ${casa} libre`);
+      console.log('Sale ' + nom);
     });
   });
 }
