@@ -23,6 +23,7 @@ function crearPartida() {
 
   router.push('/salas')
 }
+
 </script>
 
 <template>
@@ -51,6 +52,11 @@ function crearPartida() {
       <p>Código de la partida: <strong>{{ codigo }}</strong></p>
     </div>
 
+
+  <div>
     <button @click="crearPartida">Crear partida</button>
   </div>
+  </div>
+
+
 </template>
